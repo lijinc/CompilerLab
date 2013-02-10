@@ -57,7 +57,6 @@ IOStatements: READ LPAREN ID RPAREN SEMICOLON Statements
 
 Expresion:
      expr2 
-     | RelationalExpresion
      | LogicalExpresion
 ;
 
@@ -106,4 +105,3 @@ int main(void) {
 yyparse();
 return 0;
 }
-
