@@ -41,11 +41,11 @@ Statements:
 AssignmentStatement: ID ASSIGN Expresion SEMICOLON Statements
 ;
 
-ConditionalStatement: IF LogicalExpresion THEN LCURL Statements RCURL ENDIF SEMICOLON Statements
-    |                 IF LogicalExpresion THEN LCURL Statements RCURL ELSE LCURL Statements RCURL ENDIF SEMICOLON Statements
+ConditionalStatement: IF LogicalExpresion THEN Statements  ENDIF SEMICOLON Statements
+    |                 IF LogicalExpresion THEN  Statements  ELSE  Statements  ENDIF SEMICOLON Statements
 ;
 
-IterativeStatement: WHILE LogicalExpresion DO LCURL Statements RCURL ENDWHILE SEMICOLON Statements
+IterativeStatement: WHILE LogicalExpresion DO  Statements  ENDWHILE SEMICOLON Statements
 ;
 
 ReturnStatement: RETURN Expresion SEMICOLON Statements

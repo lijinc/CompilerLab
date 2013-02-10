@@ -6,28 +6,24 @@ decl integer as; enddecl
 begin
 id3=id4;
 
-if (id1==id2) then{
+if (id1==id2) then
 id3=id4;
-}
-else{
+else
 id3=9;
-if (id1==id2 AND id4==id5) then{
+if (id1==id2 AND id4==id5) then
 id3=id4;
-}
 endif;
-}
 endif ;
 
 id3=id4;
 
-if (NOT id1==id2) then{
+if (NOT id1==id2) then
 id3=id4;
-}
+
 endif;
 
-while (id3==id4) do{
+while (id3==id4) do
 id7=9;
-}
 endwhile;
 
 return 0;
