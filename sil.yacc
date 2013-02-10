@@ -1,0 +1,98 @@
+%{
+#include <stdio.h>
+int yylex(void);
+void yyerror(char *);
+%}
+%token EQ NE LT LE GT GE REF PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON COMMA ID NUMBER YETTOIMP
+%token INTEGER BOOLEAN DECL ENDDECL END IF THEN ELSE ENDIF WHILE
+%token DO ENDWHILE RETURN READ WRITE
+%%
+
+Program:VarDecl MainFunDef  {printf ("Parsed the program with main only ");}
+;
+
+MainFunDef: DataType ID LPAREN RPAREN LCURL VarDecl BEG Statements END RCURL
+;
+
+
+DataType: INTEGER
+    | 	  BOOLEAN
+;
+
+VarDecl:
+    |    DECL INTEGER Variable SEMICOLON ENDDECL
+    |    DECL BOOLEAN Variable SEMICOLON ENDDECL
+    |	 DECL VarDecl SEMICOLON VarDecl ENDDECL
+;
+
+Variable: ID COMMA Variable
+    |     ID
+;
+
+Statements: 
+    |	    AssignmentStatement
+    |       ConditionalStatement
+    |       IterativeStatement
+    |       ReturnStatement
+    |       IOStatements
+;
+
+AssignmentStatement: ID ASSIGN Expresion SEMICOLON Statements
+;
+
+ConditionalStatement: IF LogicalExpresion THEN LCURL Statements RCURL ENDIF SEMICOLON Statements
+    |                 IF LogicalExpresion THEN LCURL Statements RCURL ELSE LCURL Statements RCURL ENDIF SEMICOLON Statements
+;
+
+IterativeStatement: WHILE LogicalExpresion DO LCURL Statements RCURL ENDWHILE SEMICOLON Statements
+;
+
+ReturnStatement: RETURN Expresion SEMICOLON Statements
+;
+
+IOStatements: READ LPAREN ID RPAREN SEMICOLON Statements
+     |        WRITE LPAREN Expresion RPAREN SEMICOLON Statements
+
+Expresion:
+     expr2 
+     | LogicalExpresion
+;
+
+LogicalExpresion: expr2 EQ expr2 
+   | expr2 NE expr2 
+   | expr2 LT expr2 
+   | expr2 LE expr2 
+   | expr2 GT expr2 
+   | expr2 GE expr2
+;
+
+expr2:
+     expr3 
+   | expr2 PLUS expr3 
+   | expr2 MINUS expr3 
+;
+
+expr3:
+     expr4 
+   | expr3 MULT expr4 
+   | expr3 DIVIDE expr4 
+;
+
+expr4:
+     PLUS expr4 
+   | MINUS expr4 
+   | LPAREN Expresion RPAREN 
+   | NUMBER 
+   | ID
+;
+
+
+%%
+void yyerror(char *s) {
+fprintf(stderr, "%s\n", s);
+}
+int main(void) {
+yyparse();
+return 0;
+}
+
