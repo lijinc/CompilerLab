@@ -2,22 +2,29 @@
 #include <stdio.h>
 int yylex(void);
 void yyerror(char *);
+	struct Node{
+	
+	char *str;
+	struct Node *next1;
+	struct Node *next2;
+	struct Node *next3;
+	};
+	
+	struct Node * makenode(char *str, struct Node *next1,struct Node *next2, struct Node *next3);
+	void printtree(struct Node * ptr);
 %}
 %token EQ NE LT LE GT GE REF AND OR NOT PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON COMMA ID NUMBER YETTOIMP
 %token INTEGER BOOLEAN DECL ENDDECL END IF THEN ELSE ENDIF WHILE
 %token DO ENDWHILE RETURN READ WRITE
+
 %%
 
 Program:VarDecl MainFunDef  {printf ("Parsed the program with main\n");}
 ;
 
-MainFunDef: DataType ID LPAREN RPAREN LCURL VarDecl BEG Statements END RCURL
+MainFunDef: INTEGER ID LPAREN RPAREN LCURL VarDecl BEG Statements END RCURL
 ;
 
-
-DataType: INTEGER
-    | 	  BOOLEAN
-;
 
 VarDecl:
     |    DECL INTEGER Variable SEMICOLON ENDDECL
