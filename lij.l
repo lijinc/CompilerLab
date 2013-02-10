@@ -16,6 +16,9 @@ letter [a-zA-Z]
 "-"      { return MINUS; }
 "*"      { return MULT; }
 "&"      { return REF; }
+"AND"    { return AND;}
+"OR"     { return OR;}
+"NOT"    { return NOT;}
 "/"      { return DIVIDE; }
 ")"      { return RPAREN; }
 "("      { return LPAREN; }

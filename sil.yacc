@@ -3,12 +3,12 @@
 int yylex(void);
 void yyerror(char *);
 %}
-%token EQ NE LT LE GT GE REF PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON COMMA ID NUMBER YETTOIMP
+%token EQ NE LT LE GT GE REF AND OR NOT PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON COMMA ID NUMBER YETTOIMP
 %token INTEGER BOOLEAN DECL ENDDECL END IF THEN ELSE ENDIF WHILE
 %token DO ENDWHILE RETURN READ WRITE
 %%
 
-Program:VarDecl MainFunDef  {printf ("Parsed the program with main only ");}
+Program:VarDecl MainFunDef  {printf ("Parsed the program with main\n");}
 ;
 
 MainFunDef: DataType ID LPAREN RPAREN LCURL VarDecl BEG Statements END RCURL
@@ -27,6 +27,7 @@ VarDecl:
 
 Variable: ID COMMA Variable
     |     ID
+    |     ID LSQ Expresion RSQ
 ;
 
 Statements: 
@@ -52,13 +53,22 @@ ReturnStatement: RETURN Expresion SEMICOLON Statements
 
 IOStatements: READ LPAREN ID RPAREN SEMICOLON Statements
      |        WRITE LPAREN Expresion RPAREN SEMICOLON Statements
+;
 
 Expresion:
      expr2 
+     | RelationalExpresion
      | LogicalExpresion
 ;
 
-LogicalExpresion: expr2 EQ expr2 
+LogicalExpresion: LPAREN RelationalExpresion AND RelationalExpresion RPAREN
+   | LPAREN RelationalExpresion OR RelationalExpresion RPAREN 
+   | LPAREN NOT RelationalExpresion RPAREN
+   | LPAREN RelationalExpresion RPAREN
+;
+
+
+RelationalExpresion: expr2 EQ expr2 
    | expr2 NE expr2 
    | expr2 LT expr2 
    | expr2 LE expr2 
@@ -84,6 +94,7 @@ expr4:
    | LPAREN Expresion RPAREN 
    | NUMBER 
    | ID
+   | ID LSQ expr2 RSQ
 ;
 
 
