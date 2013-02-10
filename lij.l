@@ -29,7 +29,7 @@ letter [a-zA-Z]
 "="      { return ASSIGN; }
 ";"      { return SEMICOLON; }
 ","      { return COMMA; }
-"yettobeimpl" {return YETTOIMP;}
+"main" {return MAIN;}
 "integer" {return INTEGER;}
 "boolean" {return BOOLEAN;}
 "decl"   {return DECL;}
@@ -46,9 +46,14 @@ letter [a-zA-Z]
 "return" {return RETURN;}
 "read" {return READ;}
 "write" {return WRITE;}
-[0-9]+   { yylval = atoi(yytext); return NUMBER; }
-{letter}({letter}|{digit})*   {  yylval=*yytext;
-                                 return ID;}
+[0-9]+   {
+		yylval.ptr=makenode("NO", NULL, NULL, NULL);
+		return NUMBER;
+		}
+{letter}({letter}|{digit})*   {
+			yylval.ptr=makenode("ID", NULL, NULL, NULL);
+			return ID;
+			}
 [ \t\n] ;  /* skip whitespace */
 .        { yyerror("illegal token"); }
 %%
