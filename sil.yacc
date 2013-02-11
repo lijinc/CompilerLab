@@ -2,8 +2,8 @@
 #include <stdio.h>
 int yylex(void);
 void yyerror(char *);
+	extern int yylineno;
 	struct Node{
-
 	char *str;
 	struct Node *next1;
 	struct Node *next2;
@@ -117,7 +117,7 @@ expr4:
 
 %%
 void yyerror(char *s) {
-fprintf(stderr, "%s\n", s);
+fprintf(stderr, "%s in line no : %d\n", s, yylineno);
 }
 int main(void) {
 yyparse();

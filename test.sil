@@ -1,6 +1,5 @@
 
 decl integer as; enddecl
-
 integer main(){
 decl integer as,B[10]; enddecl
 begin
