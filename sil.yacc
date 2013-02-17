@@ -13,11 +13,11 @@ void yyerror(char *);
 	struct Node * makenode(char *str, struct Node *next1,struct Node *next2, struct Node *next3);
 	void printtree(struct Node * ptr);
 %}
-%token <ptr> EQ NE LT LE GT GE REF MAIN AND OR NOT PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON COMMA ID NUMBER 
-%token <ptr> INTEGER BOOLEAN DECL ENDDECL END IF THEN ELSE ENDIF WHILE
+%token <ptr> EQ NE LT LE GT GE REF MAIN AND OR NOT PLUS MINUS MULT DIVIDE RPAREN BEG LPAREN RCURL LCURL RSQ LSQ ASSIGN SEMICOLON  COLON COMMA ID NUMBER 
+%token <ptr> INTEGER BOOLEAN DECL ENDDECL END SWITCH CASE IF THEN ELSE ENDIF WHILE
 %token <ptr> DO ENDWHILE RETURN READ WRITE
 
-%type <ptr> Program MainFunDef VarDecl Variable Statement Statements AssignmentStatement ConditionalStatement IterativeStatement ReturnStatement IOStatements Expresion LogicalExpresion RelationalExpresion expr2 expr3 expr4
+%type <ptr> Program MainFunDef VarDecl Variable Statement Statements AssignmentStatement ConditionalStatement SwitchStatement SwitchBody Constant SwStatement IterativeStatement ReturnStatement IOStatements Expresion LogicalExpresion RelationalExpresion expr2 expr3 expr4
 
 %union {
 	struct Node *ptr;
@@ -26,7 +26,7 @@ void yyerror(char *);
 
 %%
 
-Program:VarDecl MainFunDef  {printf ("Parsed the program with main\n");}
+Program:VarDecl MainFunDef  {printf ("\nParsed the program!!\n");}
 ;
 
 MainFunDef: INTEGER MAIN LPAREN RPAREN LCURL VarDecl BEG Statements END RCURL {$$=makenode("MAIN", $6, $8, NULL); printtree($$);}
@@ -54,9 +54,26 @@ Statement:
     |       IterativeStatement
     |       ReturnStatement
     |       IOStatements
+    |       SwitchStatement
 ;
 
-AssignmentStatement: ID ASSIGN Expresion {$$=makenode("ASGN", $3,NULL, NULL);}
+SwitchStatement: SWITCH Expresion LCURL SwitchBody RCURL {$$=makenode("SWITCH", $2,$4, NULL);}
+;
+
+SwitchBody: SwStatement SEMICOLON SwitchBody  {$$=makenode(NULL, $1,$3, NULL);}
+    |	{$$=NULL;}	
+;
+
+SwStatement: CASE Constant COLON AssignmentStatement {$$=makenode("CASE", $2,$4, NULL);}
+    |  
+;
+
+Constant:ID
+    |  		NUMBER
+;
+
+
+AssignmentStatement: ID ASSIGN Expresion {$$=makenode("ASGN", $1,$3, NULL);}
 ;
 
 ConditionalStatement: IF LogicalExpresion THEN Statements  ENDIF {$$=makenode("IF", $2,$4, NULL);}
@@ -72,6 +89,7 @@ ReturnStatement: RETURN Expresion {$$=makenode("RET", $2,NULL,NULL);}
 IOStatements: READ LPAREN ID RPAREN {$$=makenode("READ", $3,NULL,NULL);}
      |        WRITE LPAREN Expresion RPAREN {$$=makenode("WRITE", $3,NULL,NULL);}
 ;
+
 
 Expresion:
      expr2 {$$=$1;}
@@ -110,14 +128,14 @@ expr4:
    | MINUS expr4 {$$=$2;}
    | LPAREN Expresion RPAREN {$$=$2;}
    | NUMBER 
-   | ID
-   | ID LSQ expr2 RSQ {$$=makenode(NULL, $3,NULL,NULL);}
+   | ID 
+   | ID LSQ expr2 RSQ {$$=makenode("ARRAY", $3,NULL,NULL);}
 ;
 
 
 %%
 void yyerror(char *s) {
-fprintf(stderr, "%s in line no : %d\n", s, yylineno);
+fprintf(stderr, "%s\n", s);
 }
 int main(void) {
 yyparse();
@@ -140,14 +158,14 @@ void printtree(struct Node * ptr)
 	if(ptr==NULL)
 		return;
 	if(ptr->str!=NULL)
-		printf(" ( ");
+		printf(" [ ");
 	if(ptr->str!=NULL)
 		printf("%s", ptr->str);
 	printtree(ptr->next1);
 	printtree(ptr->next2);
 	printtree(ptr->next3);
 	if(ptr->str!=NULL)
-		printf(" ) ");
+		printf(" ]");
 }
-	
+
 

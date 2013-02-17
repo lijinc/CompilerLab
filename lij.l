@@ -29,7 +29,10 @@ letter [a-zA-Z]
 "="      { return ASSIGN; }
 ";"      { return SEMICOLON; }
 ","      { return COMMA; }
+":"	   {return COLON;}
 "main" {return MAIN;}
+"switch" {return SWITCH;}
+"case" {return CASE;}
 "integer" {return INTEGER;}
 "boolean" {return BOOLEAN;}
 "decl"   {return DECL;}

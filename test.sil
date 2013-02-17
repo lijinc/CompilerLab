@@ -1,4 +1,3 @@
-
 decl integer as; enddecl
 integer main(){
 decl integer as,B[10]; enddecl
@@ -18,8 +17,13 @@ id3=id4;
 
 if (NOT id1==id2) then
 id3=id4;
-
 endif;
+
+switch(id2){
+case 1 : asd=a+b;
+case id : asd=pqr;
+case id : asd=pqr;
+};
 
 while (id3==id4) do
 id7=9;
