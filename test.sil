@@ -1,6 +1,12 @@
-decl integer as; enddecl
+decl
+integer as,bin[100];
+boolean bok; 
+enddecl
 integer main(){
-decl integer as,B[10]; enddecl
+decl
+integer as,bi,c[50];
+boolean car;
+enddecl
 begin
 id3=id4;
 
