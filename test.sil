@@ -1,5 +1,5 @@
 decl
-integer as,bin[100];
+integer id1,id2,id3,id4,id5,id6,id7,id8,id9;
 boolean bok; 
 enddecl
 integer main(){
@@ -14,22 +14,18 @@ if (id1==id2) then
 id3=id4;
 else
 id3=9;
-if (id1==id2 AND id4==id5) then
+if (id1==bi AND id4==id5) then
 id3=id4;
+id7=id5+9;
 endif;
 endif ;
 
 id3=id4;
 
-if (NOT id1==id2) then
+if (NOT TRUE) then
 id3=id4;
 endif;
 
-switch(id2){
-case 1 : asd=a+b;
-case id : asd=pqr;
-case id : asd=pqr;
-};
 
 while (id3==id4) do
 id7=9;
@@ -37,8 +33,8 @@ endwhile;
 
 return 0;
 
-read(i);
-write(i*-1);
+read(id3);
+write(id4*-1);
 
 end
 

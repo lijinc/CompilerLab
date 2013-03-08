@@ -14,7 +14,6 @@
 #define eq 'E'
 #define ne 'N'
 int yylex(void);
-void yyerror(char *);
 extern int yylineno;
 struct Gsymbol {
 	char* NAME; 		
@@ -72,14 +71,14 @@ Program:GDefblock MainFunDef
 ;
 
 MainFunDef: INTEGER MAIN LPAREN RPAREN LCURL LDefblock BEG Statements END RCURL {
-											printf ("\nAbstract Syntax Tree\n");
-											printf("-----------------------------------------\n");
+											
 											$$=makeTree("MAIN", NULL, $8, NULL); 
 											printTree($$);
 										}
 ;
 
-GDefblock: DECL GDeflist ENDDECL	
+GDefblock:
+| DECL GDeflist ENDDECL	
 ;
 
 GDeflist: GDecl				
@@ -98,7 +97,8 @@ GId: ID	{Ginstall($1->NAME, typeval, 1);}
   |     ID LSQ NUMBER RSQ {Ginstall($1->NAME, typeval,$3->VALUE); }
 ;
 
-LDefblock: DECL LDeflist ENDDECL	
+LDefblock:
+| DECL LDeflist ENDDECL	
 ;
 
 LDeflist: LDecl			
@@ -151,7 +151,29 @@ Constant:ID
 ;
 
 
-AssignmentStatement: ID ASSIGN Expresion {$$=makeTree("ASGN", $1,$3, NULL);}
+AssignmentStatement: ID ASSIGN Expresion {
+						struct Lsymbol* temp = Llookup($1->NAME);
+						if(temp==NULL){
+							struct Gsymbol* gtemp = Glookup($1->NAME);
+							if(gtemp==NULL||gtemp->SIZE!=1){
+								yyerror("Undefined Var..");
+							}
+							else{
+							     	 $1->GENTRY = gtemp;
+							     	 $1->TYPE = gtemp->TYPE;
+							    }	
+						}
+						else{
+							 $1->LENTRY = temp;
+							 $1->TYPE = temp->TYPE;
+						}
+						if($1->TYPE == $3->TYPE) 
+							$$=makeTree("ASGN", $1,$3, NULL);
+						else{ 
+							  yyerror("Type mismatch");
+					  	}
+
+					  }
 ;
 
 ConditionalStatement: IF LogicalExpresion THEN Statements  ENDIF {$$=makeTree("IF", $2,$4, NULL);}
@@ -164,7 +186,27 @@ IterativeStatement: WHILE LogicalExpresion DO  Statements  ENDWHILE {$$=makeTree
 ReturnStatement: RETURN Expresion {$$=makeTree("RET", $2,NULL,NULL);}	
 ;
 
-IOStatements: READ LPAREN ID RPAREN 	{$$=makeTree("READ", $3,NULL,NULL);}
+IOStatements: READ LPAREN ID RPAREN 	{ 
+						struct Lsymbol *temp = Llookup($3->NAME);
+             					if(temp==NULL)
+						{ 
+							struct Gsymbol *gtemp = Glookup($3->NAME);
+							if(gtemp==NULL || gtemp->SIZE!=1)
+							{
+							       yyerror("Undefined variable");
+							}
+							else
+							{
+							       $3->GENTRY = gtemp;
+							       $$ = makeTree("READ", $3,NULL,NULL);
+						        }
+				         	}
+						else
+						 {
+							$3->LENTRY = temp;
+							$$ =makeTree("READ", $3,NULL,NULL);
+						}
+					}
      |        WRITE LPAREN Expresion RPAREN   {$$=makeTree("WRITE", $3,NULL,NULL);}
 ;
 
@@ -174,52 +216,182 @@ Expresion:
      | LogicalExpresion {$$=makeTree(NULL, $1,NULL,NULL);}
 ;
 
-LogicalExpresion: LPAREN RelationalExpresion AND RelationalExpresion RPAREN {$$=makeTree("AND", $2,$4,NULL);}
-   | LPAREN RelationalExpresion OR RelationalExpresion RPAREN {$$=makeTree("OR", $2,$4,NULL);}
-   | LPAREN NOT RelationalExpresion RPAREN  {$$=makeTree("NOT", $3,NULL,NULL);}
+LogicalExpresion: LPAREN RelationalExpresion AND RelationalExpresion RPAREN {   if( $2->TYPE == $4->TYPE)
+						$$=makeTree("AND", $2,$4,NULL);
+					else{
+						yyerror("Type Mismatch");
+					}
+					}
+   | LPAREN RelationalExpresion OR RelationalExpresion RPAREN {   if( $2->TYPE == $2->TYPE)
+						$$=makeTree("OR", $2,$4,NULL);
+					else{
+						yyerror("Type Mismatch");
+					}
+					}
+   | LPAREN NOT RelationalExpresion RPAREN  {   
+						$$=makeTree("NOT", $3,NULL,NULL);
+					}
    | LPAREN RelationalExpresion RPAREN {$$=$2;}
 ;
 
 
-RelationalExpresion: expr2 EQ expr2 {$$=makeTree("EQ", $1,$3,NULL);}
-   | expr2 NE expr2 {$$=makeTree("NE", $1,$3,NULL);}
-   | expr2 LT expr2 {$$=makeTree("LT", $1,$3,NULL);}
-   | expr2 LE expr2 {$$=makeTree("LE", $1,$3,NULL);}
-   | expr2 GT expr2 {$$=makeTree("GT", $1,$3,NULL);}
-   | expr2 GE expr2 {$$=makeTree("GE", $1,$3,NULL);}
+RelationalExpresion: expr2 EQ expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+						{
+						$$=makeTree("EQ", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | expr2 NE expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+   						{
+						$$=makeTree("NE", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | expr2 LT expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+   						{
+						$$=makeTree("LT", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | expr2 LE expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+   						{
+						$$=makeTree("LE", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | expr2 GT expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+   						{
+						$$=makeTree("GT", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | expr2 GE expr2 {   if( $1->TYPE == $3->TYPE && $1->TYPE == INTEG )
+   						{
+						$$=makeTree("GE", $1,$3,NULL);
+						$$->TYPE=BOOL;}
+					else{
+						yyerror("Type Mismatch");
+					}
+		}
+   | BNUM 	{
+   			$$=makeTree("BOOLNUM", NULL,NULL,NULL);
+   			$$->TYPE=BOOL;}
+ 
 ;
 
 expr2:
      expr3 {$$=$1;}
-   | expr2 PLUS expr3 {$$=makeTree("PL", $1,$3,NULL);}
-   | expr2 MINUS expr3  {$$=makeTree("MI", $1,$3,NULL);}
+   | expr2 PLUS expr3  {   if( $1->TYPE == $2->TYPE && $2->TYPE == $3->TYPE  )
+						{$$=makeTree("PL", $1,$3,NULL);
+						$$->TYPE=INTEG;}
+					else{
+						yyerror("Type Mismatch");
+					}
+			}
+   | expr2 MINUS expr3  {   if( $1->TYPE == $2->TYPE && $2->TYPE == $3->TYPE  )
+   						{
+						$$=makeTree("MI", $1,$3,NULL);
+						$$->TYPE=INTEG;}
+					else{
+						yyerror("Type Mismatch");
+					}
+			}
 ;
 
 expr3:
      expr4 {$$=$1;}
-   | expr3 MULT expr4 {$$=makeTree("MU", $1,$3,NULL);}
-   | expr3 DIVIDE expr4 {$$=makeTree("DI", $1,$3,NULL);}
+   | expr3 MULT expr4 {   if( $1->TYPE == $2->TYPE && $2->TYPE == $3->TYPE  )
+   						{
+						$$=makeTree("MU", $1,$3,NULL);
+						$$->TYPE=INTEG;}
+					else{
+						yyerror("Type Mismatch");
+					}
+			}
+   | expr3 DIVIDE expr4 {   if( $1->TYPE == $2->TYPE && $2->TYPE == $3->TYPE  )
+   						{
+						$$=makeTree("DI", $1,$3,NULL);
+						$$->TYPE=INTEG;}
+					else{
+						yyerror("Type Mismatch");
+					}
+			}
 ;
 
 expr4:
-     PLUS expr4 {$$=$2;}
-   | MINUS expr4 {$$=$2;}
+     PLUS expr4 {if( $1->TYPE == $2->TYPE)
+     				{
+				$$=makeTree("PL", $2,NULL,NULL);
+				$$->TYPE=INTEG;}
+			else{
+				yyerror("Type Mismatch");
+			}
+		}
+   | MINUS expr4 {if( $1->TYPE == $2->TYPE)
+        			{
+				$$=makeTree("MI", $2,NULL,NULL);
+				$$->TYPE=INTEG;}
+			else{
+				yyerror("Type Mismatch");
+			}
+		}
+  
    | LPAREN Expresion RPAREN {$$=$2;}
-   | NUMBER {$$=makeTree("NUMBER", NULL,NULL,NULL);}
-   | ID 
-   | ID LSQ expr2 RSQ {$$=makeTree("ARRAY", $3,NULL,NULL);}
+   | NUMBER {
+   	$$=makeTree("NUMBER", NULL,NULL,NULL);
+   	$$->TYPE=INTEG;}
+   | ID {	$$=$1;
+   		struct Lsymbol* temp = Llookup($$->NAME);
+		if(temp==NULL) 
+		{
+			struct Gsymbol* gtemp = Glookup($$->NAME);
+			if(gtemp==NULL) 
+				yyerror("Undefined Variable in Expression");
+			else
+			{
+				$$->GENTRY = gtemp;
+				$$->TYPE = gtemp->TYPE;
+			}
+		 }
+		 else{ 
+		 	$$->LENTRY = temp;
+			$$->TYPE = temp->TYPE;
+		 }
+       }
+   		
+   | ID LSQ expr2 RSQ { $$=makeTree("ARRAY", $3,NULL,NULL);
+   		        struct Gsymbol* gtemp = Glookup($$->NAME);
+		        if(gtemp==NULL) 
+		        	yyerror("Undefined Variable1");
+			else {
+				$$->GENTRY = gtemp;
+				$$->TYPE = gtemp->TYPE;
+			}
+   			}
 ;
 
 
 %%
 void yyerror(char *s) {
 fprintf(stderr, "%s\n", s);
+exit(0);
 }
 int main(void) {
 yyparse();
 printSymTable();
 return 0;
 }
+
 
 struct node * makeTree(char *NAME, struct node *P1,struct node *P2, struct node *P3)
 {
