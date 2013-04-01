@@ -105,6 +105,7 @@ void printSymTable();
 int memcount = 0;
 int mainflag=0;
 int typeval=0; 
+int argFlag=0;
 char* typ[]={"VOID","INTEGER","BOOLEAN"};
 struct node* Thead=NULL;
 %}
@@ -114,7 +115,7 @@ struct node* Thead=NULL;
 %token <n> INTEGER BOOLEAN BNUM DECL ENDDECL END SWITCH CASE IF THEN ELSE ENDIF WHILE
 %token <n> DO ENDWHILE RETURN READ WRITE
 
-%type <n> Program MainFunDef GDefblock GDeflist GDecl GIdlist GId LDefblock LDeflist LDecl LIdlist LId Type Statement Statements AssignmentStatement ConditionalStatement SwitchStatement SwitchBody Constant SwStatement IterativeStatement ReturnStatement IOStatements Expresion LogicalExpresion RelationalExpresion expr2 expr3 expr4
+%type <n> Program MainFunDef FunDef ArgList ArgID ArgIdlist GDefblock GDeflist GDecl GIdlist GId LDefblock LDeflist LDecl LIdlist LId Type Statement Statements AssignmentStatement ConditionalStatement SwitchStatement SwitchBody Constant SwStatement IterativeStatement ReturnStatement IOStatements Expresion LogicalExpresion RelationalExpresion expr2 expr3 expr4
 
 
 
@@ -137,8 +138,16 @@ struct node* Thead=NULL;
 
 %%
 
-Program:GDefblock MainFunDef  
+Program:GDefblock GDecl MainFunDef  
 ;
+
+FunDef: ID LPAREN ArgList RPAREN LCURL LDefblock BEG Statements END RCURL {
+										makeSymbolTable(ID->NAME);
+						                          }
+	|
+;
+
+
 
 MainFunDef: INTEGER MAIN LPAREN RPAREN LCURL LDefblock BEG Statements END RCURL {  	FILE *fp;
 											fp = fopen("sim.asm","a");
@@ -146,8 +155,6 @@ MainFunDef: INTEGER MAIN LPAREN RPAREN LCURL LDefblock BEG Statements END RCURL 
 											fprintf(fp,"PUSH BP\n");
 											fprintf(fp,"MOV BP,SP\n");
 											int i=1;
-											/*for(i=1;i<memcount;i++)
-							  					fprintf(fp,"PUSH R%d\n",regcount);*/
 											fclose(fp);
 											mainflag=1;
 											memcount=1;
@@ -161,7 +168,8 @@ GDefblock:
 				int i=0;
 				/*for(i=0;i<memcount;i++)
 					fprintf(fp,"PUSH R%d\n",regcount);
-				fclose(fp);*/						
+				fclose(fp);*/		
+				argFlag=1;				
 				memcount = 1;	
 				fp=fopen("sim.asm","a");
 				fprintf(fp,"JMP main\n");
@@ -173,7 +181,12 @@ GDeflist: GDecl
    | GDeflist GDecl			
 ;
 
-GDecl: Type GIdlist SEMICOLON 		
+
+GDecl: Type GIdlist SEMICOLON {if(argFlag==1){
+					yyerror("syntax error");				
+				}
+			      }
+	|Type FunDef
 ;
 
 GIdlist: GIdlist COMMA GId
@@ -183,6 +196,18 @@ GIdlist: GIdlist COMMA GId
 
 GId: ID	{Ginstall($1->NAME, typeval, 1);}
   |     ID LSQ NUMBER RSQ {Ginstall($1->NAME, typeval,$3->VALUE); }
+  |  ID LPAREN ArgList RPAREN 
+;
+
+ArgList: ArgIdlist
+	|
+;
+
+ArgIdlist: ArgIdlist COMMA ArgID
+  | ArgID
+;
+
+ArgID: Type ID
 ;
 
 LDefblock:

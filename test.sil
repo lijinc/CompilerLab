@@ -1,7 +1,11 @@
 decl
-integer id1,id2,id3,id4,id5,id6,id7,id8,id9;
+integer id1,id2,id3,id4,id5,id6,id7,id8,id9,Id(integer xa,integer xb);
 boolean bok; 
 enddecl
+integer k(integer k){
+begin
+end
+}
 integer main(){
 decl
 integer as,bi,c[50];
